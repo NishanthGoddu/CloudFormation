@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: 2010-09-09
+#Input Parameters
+Parameters:
+  VPCname:
+    Type: String
+  VPCcidr:
+    Type: String
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  VPCENVIRONMENT:
+    Type: String
+    Default: DEV
+    AllowedValues:
+      - DEV
+      - QA
+      - PRECDE
+  TransitGatewayID:
+    Type: String
+  TransitGatewayRouteTable:
+    Type: String
+    Default: RD-DEV
+    AllowedValues:
+      - RD-NONPROD-AD
+      - RD-PRECDE
+      - RD-QA
+      - RD-QA-HORIZ
+      - RD-DEV
+      - RD-DXGW-NONPROD-1
+      - RD-DXGW-NONPROD-2
+      - RD-INTER-NP-UE2
+      - RD-INTER-NP-UW2
+      - RD-INTER-NP-EW1
+      - RD-INTER-NP-EW2
+
+# Create Resources
+Resources:
+ MyTransitGatewayAttachment:
+   Type: AWS::EC2::TransitGatewayAttachment
+   Properties:
+    SubnetIds:
+      - !Ref VPCcidr
+    TransitGatewayId: !Ref TransitGatewayID
+    VpcId: !Ref VPCname
+ MyTransitGatewayRouteTableAssociation:
+   Type: AWS::EC2::TransitGatewayRouteTableAssociation
+   Properties:
+     TransitGatewayAttachmentId: !Ref MyTransitGatewayAttachment
+     TransitGatewayRouteTableId: !Ref TransitGatewayRouteTable
+ MyTransitGatewayRoutePropagation:
+    Type: AWS::EC2::TransitGatewayRouteTablePropagation
+    Properties:
+      TransitGatewayAttachmentId: !Ref MyTransitGatewayAttachment
+      TransitGatewayRouteTableId: !Ref TransitGatewayRouteTable
