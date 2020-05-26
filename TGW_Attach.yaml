@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+ MyTransitGatewayAttachment:
+   Type: AWS::EC2::TransitGatewayAttachment
+   Properties:
+    SubnetIds:
+      - !ImportValue EC2cidr1
+    TransitGatewayId: !ImportValue MyTransitGateway
+    VpcId: !ImportValue VPCID
+ MyTransitGatewayRouteTableAssociation:
+   Type: AWS::EC2::TransitGatewayRouteTableAssociation
+   Properties:
+     TransitGatewayAttachmentId: !Ref MyTransitGatewayAttachment
+     TransitGatewayRouteTableId: !ImportValue TGWRouteTable
+ MyTransitGatewayRoutePropagation:
+    Type: AWS::EC2::TransitGatewayRouteTablePropagation
+    Properties:
+      TransitGatewayAttachmentId: !Ref MyTransitGatewayAttachment
+      TransitGatewayRouteTableId: !ImportValue TGWRouteTable

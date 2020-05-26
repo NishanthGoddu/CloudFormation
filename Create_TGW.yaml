@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+ MyTransitGateway:
+   Type: AWS::EC2::TransitGateway
+   Properties:
+     Description: TGW Route Integration Test
+     AutoAcceptSharedAttachments: enable
+ MyTransitGatewayRouteTable:
+  Type: AWS::EC2::TransitGatewayRouteTable
+  Properties:
+    TransitGatewayId: !Ref MyTransitGateway
+Outputs:
+  TransitGatewayID:
+    Description: My TransitGateway ID
+    Value: !Ref MyTransitGateway
+    Export:
+      Name: MyTransitGateway
+  TGWRouteTable:
+    Description: My TransitGateway RouteTable
+    Value: !Ref MyTransitGatewayRouteTable
+    Export:
+      Name: TGWRouteTable

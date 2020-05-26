@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  VPCcidr:
+    Type: String
+    Description: VPC CIDR
+    Default: 10.0.0.0/16
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  AvailabilityZone1:
+    Description: Select AvailabilityZone
+    Type: String
+    Default: us-east-1a
+    AllowedValues:
+      - us-east-1a
+      - us-east-1b
+      - us-west-1a
+      - us-west-1b
+    ConstraintDescription: must be a valid region from the List.
+  AvailabilityZone2:
+    Description: Select AvailabilityZone
+    Type: String
+    Default: us-east-1b
+    AllowedValues:
+      - us-east-1a
+      - us-east-1b
+      - us-west-1a
+      - us-west-1b
+    ConstraintDescription: must be a valid region from the List.
+  EC2cidr1:
+      Type: String
+      Description: EC2 CIDR
+      Default: 10.0.1.0/24
+      AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+      ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  EC2cidr2:
+      Type: String
+      Description: EC2 CIDR
+      Default: 10.0.2.0/24
+      AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+      ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+Resources:
+ MyVPC:
+  Type: AWS::EC2::VPC
+  Properties:
+    CidrBlock: !Ref VPCcidr
+ MyVPCRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MyVPC
+ MyInternetGateway:
+    Type: AWS::EC2::InternetGateway
+ AttachGateway:
+   Type: AWS::EC2::VPCGatewayAttachment
+   Properties:
+    VpcId: !Ref MyVPC
+    InternetGatewayId:
+       Ref: MyInternetGateway
+ MySecurityGroup:
+   Type: AWS::EC2::SecurityGroup
+   Properties:
+      GroupDescription: Allow http and SSH to client host
+      VpcId: !Ref MyVPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+# Create 1st EC2 Instance
+ MySubnet1:
+     Type: AWS::EC2::Subnet
+     Properties:
+       VpcId:
+         Ref: MyVPC
+       CidrBlock: !Ref EC2cidr1
+       AvailabilityZone: !Ref AvailabilityZone1
+ MyEC2Instance1:
+    Type: AWS::EC2::Instance
+    Properties:
+        AvailabilityZone: !Ref AvailabilityZone1
+        ImageId: ami-a4c7edb2
+        InstanceType: t2.micro
+        SubnetId: !Ref MySubnet1
+        SecurityGroupIds:
+          - !Ref MySecurityGroup
+# Create 2nd EC2 Instance
+ MySubnet2:
+     Type: AWS::EC2::Subnet
+     Properties:
+       VpcId:
+         Ref: MyVPC
+       CidrBlock: !Ref EC2cidr2
+       AvailabilityZone: !Ref AvailabilityZone2
+ MyEC2Instance2:
+    Type: AWS::EC2::Instance
+    Properties:
+        AvailabilityZone: !Ref AvailabilityZone2
+        ImageId: ami-a4c7edb2
+        InstanceType: t2.micro
+        SubnetId: !Ref MySubnet2
+        SecurityGroupIds:
+          - !Ref MySecurityGroup
+
+# Outputs
+Outputs:
+  VPCID:
+    Description: My VPC ID
+    Value: !Ref MyVPC
+    Export:
+      Name: VPCID
+  SecurityGroupID:
+    Description: My Security Group
+    Value: !Ref MySecurityGroup
+    Export:
+      Name: MySecurityGroup
+  EC2InstanceID1:
+    Description: My EC2 Instance #1
+    Value: !Ref MyEC2Instance1
+    Export:
+      Name: EC2Instance1
+  EC2cidr1:
+    Description: My EC2 Subnet #1
+    Value: !Ref MySubnet1
+    Export:
+      Name: EC2cidr1
+  EC2InstanceID2:
+    Description: My EC2 Instance #2
+    Value: !Ref MyEC2Instance2
+    Export:
+      Name: EC2Instance-2
+  EC2cidr2:
+    Description: My EC2 Subnet #2
+    Value: !Ref MySubnet2
+    Export:
+      Name: EC2cidr2
